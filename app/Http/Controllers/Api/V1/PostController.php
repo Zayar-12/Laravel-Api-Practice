@@ -7,6 +7,7 @@ use App\Http\Requests\StorePostRequest;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use MessageFormatter;
 
 class PostController extends Controller
@@ -23,8 +24,10 @@ class PostController extends Controller
         //     ];
 
         // return Post::all();
+        $user = request()->user();
+        $posts = $user->posts()->with('author')->paginate();
 
-        return PostResource::collection(Post::with('author')->get()); //->paginate(3);
+        return PostResource::collection($posts); //->paginate(3);
     }
 
     /**
@@ -36,7 +39,7 @@ class PostController extends Controller
         // $data=$request->only('title','body');
         $data = $request->validated();
 
-        $data['author_id'] = 1;
+        $data['author_id'] = $request->user()->id;
 
         $post = Post::create($data);
 
@@ -55,6 +58,11 @@ class PostController extends Controller
         //     new PostResource($post)
         //     )->header('Test', 'Zayar');
 
+        // $user = request()->user();
+
+
+        abort_if(Auth::id() != $post->author_id, 403, 'Access Forbidden');
+
         return new PostResource($post);
     }
 
@@ -63,6 +71,8 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
+
+      abort_if(Auth::id() != $post->author_id, 403, 'Access Forbidden');
         $data = $request->validate([
             'title' => ['required', 'string', 'min:2'],
             'body' => ['required', 'string', 'min:2']
@@ -77,6 +87,9 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+
+      abort_if(Auth::id() != $post->author_id, 403, 'Access Forbidden');
+
         $post->delete();
         return response()->noContent();
     }
