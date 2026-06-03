@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\PostController;
+use App\Http\Controllers\ImageGenerationController;
 // use App\Http\Controllers\Api\V2\PostController as V2PostController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -16,6 +17,7 @@ Route::get('/user', function (Request $request) {
 Route::prefix('v1')->group(function () {
     //auto define all five functions;
     Route::apiResource('posts', PostController::class);
+     Route::apiResource('image-generations', ImageGenerationController::class)->only('index','store');
 });
 });
 
